@@ -1,7 +1,7 @@
 CC = g++
 DEBUG_FLAGS = -Wall -Wextra -std=c++20
-BENCH_FLAGS = -O3 -march=native
-FILES = src/main.cpp src/eytzinger.cpp src/eytzinger_branchless.cpp
+BENCH_FLAGS = -O3 -march=native -std=c++20
+FILES = src/main.cpp src/eytzinger.cpp
 
 all: debug bench
 

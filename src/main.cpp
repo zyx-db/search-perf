@@ -5,8 +5,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "binsearch.cpp"
 #include "eytzinger.cpp"
-#include "eytzinger_branchless.cpp"
 
 struct BenchData{
   public:
@@ -73,21 +73,53 @@ void benchmark(unsigned size, BenchData &result){
     }
     end = std::chrono::steady_clock::now(); 
     result.set_eytzinger = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+
+    std::cerr << checksum << std::endl;
   }
-
   {
-    Branchless::ESet<int> s(data);
-    /* begin = std::chrono::steady_clock::now(); */
-    /* int checksum = 0; */
-    /* for (auto x: false_queries){ */
-    /*   checksum ^= s.contains(x); */ 
-    /* } */
-    /* for (auto x: true_queries){ */
-    /*   checksum ^= s.contains(x); */ 
-    /* } */
-    /* end = std::chrono::steady_clock::now(); */ 
-    /* result.bl_set_eytzinger = std::chrono::duration_cast<std::chrono::microseconds>(end - begin); */
+    Eytzinger::BL_ESet<int> s(data);
+    begin = std::chrono::steady_clock::now();
+    int checksum = 0;
+    for (auto x: false_queries){
+      checksum ^= s.contains(x); 
+    }
+    for (auto x: true_queries){
+      checksum ^= s.contains(x); 
+    }
+    end = std::chrono::steady_clock::now(); 
+    result.bl_set_eytzinger = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 
+    std::cerr << checksum << std::endl;
+  }
+  {
+    Binsearch::Set<int> s(data);
+    begin = std::chrono::steady_clock::now();
+    int checksum = 0;
+    for (auto x: false_queries){
+      checksum ^= s.contains(x); 
+    }
+    for (auto x: true_queries){
+      checksum ^= s.contains(x); 
+    }
+    end = std::chrono::steady_clock::now(); 
+    result.set_bin_search = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+
+    std::cerr << checksum << std::endl;
+  }
+  {
+    Binsearch::BL_Set<int> s(data);
+    begin = std::chrono::steady_clock::now();
+    int checksum = 0;
+    for (auto x: false_queries){
+      checksum ^= s.contains(x); 
+    }
+    for (auto x: true_queries){
+      checksum ^= s.contains(x); 
+    }
+    end = std::chrono::steady_clock::now(); 
+    result.bl_set_bin_search = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+
+    std::cerr << checksum << std::endl;
   }
 }
 
