@@ -51,7 +51,7 @@ namespace Eytzinger {
 	BL_ESet(std::vector<T> vals): BaseSet<T>{}{
 	  this -> size = vals.size();
 	  unsigned init = 0;
-	  this -> data = (T*) aligned_alloc(32, sizeof(T) * (this -> size + 1));
+	  this -> data = (T*) aligned_alloc(64, sizeof(T) * (this -> size + 1));
 	  if (this -> data == nullptr){
 	    this -> data = new T[this -> size + 1];
 	    std::cerr << "failed aligned_alloc" << std::endl;
@@ -63,15 +63,11 @@ namespace Eytzinger {
 	bool contains(T key){
 	  unsigned idx = 1;
 	  while (idx < this -> size){
-	    if (this -> data[idx] == key){ return true; }
-	    if (this -> data[idx] > key){
-	      idx = 2 * idx + 1; 
-	    }
-	    else {
-	      idx = 2 * idx; 
-	    }
+	    __builtin_prefetch(this -> data + idx * 16);
+	    idx = 2 * idx + (this -> data[idx] < key);
 	  }
-	  return false;
+	  idx >>= __builtin_ffs(~idx);
+	  return this -> data[idx] == key;
       }
     };
 

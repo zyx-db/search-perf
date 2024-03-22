@@ -23,11 +23,12 @@ struct BenchData{
     std::chrono::microseconds packed_eytzinger;
 
     void print() {
-      std::cout << "\tbin\te" << std::endl;
-      std::cout << "set:\t" << set_bin_search.count() << "\t" << set_eytzinger.count() << std::endl;
+      std::cout << "\t\tbin\teytzinger" << std::endl;
+      std::cout << "b set:\t" << set_bin_search.count() << "\t" << set_eytzinger.count() << std::endl;
       std::cout << "bl set:\t" << bl_set_bin_search.count() << "\t" << bl_set_eytzinger.count() << std::endl;
       /* std::cout << "map:\t" << map_bin_search.count() << "\t" << map_eytzinger.count() << std::endl; */
       /* std::cout << "pmap:\t" << packed_bin_search.count() << "\t" << packed_eytzinger.count() << std::endl; */
+      std::cout << std::endl;
     }
 };
 
