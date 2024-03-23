@@ -9,7 +9,7 @@ VENV=script-venv
 make bench
 
 # set up env to analyze file
-python -m venv $VENV
+python3 -m venv $VENV
 source $VENV/bin/activate
 pip3 install -r ./analysis/requirements.txt
 
