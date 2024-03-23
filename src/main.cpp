@@ -7,32 +7,34 @@
 
 #include "set.cpp"
 
+int QUERIES = 1e6;
+
 struct BenchData{
   public:
 
-    std::chrono::microseconds set_bin_search;
-    std::chrono::microseconds bl_set_bin_search;
-    std::chrono::microseconds set_eytzinger;
-    std::chrono::microseconds bl_set_eytzinger;
+    std::chrono::nanoseconds set_bin_search;
+    std::chrono::nanoseconds bl_set_bin_search;
+    std::chrono::nanoseconds set_eytzinger;
+    std::chrono::nanoseconds bl_set_eytzinger;
 
-    std::chrono::microseconds map_bin_search;
-    std::chrono::microseconds map_eytzinger;
+    std::chrono::nanoseconds map_bin_search;
+    std::chrono::nanoseconds map_eytzinger;
 
-    std::chrono::microseconds packed_bin_search;
-    std::chrono::microseconds packed_eytzinger;
+    std::chrono::nanoseconds packed_bin_search;
+    std::chrono::nanoseconds packed_eytzinger;
   
     void headers() {
       using namespace std;
-      cout << "size, binary set, eytzinger set, bl binary set, bl eytzinger set" << endl;
+      cout << "size,binary set,eytzinger set,bl binary set,bl eytzinger set" << endl;
     }
 
     void print(unsigned long size) {
       using namespace std;
       cout << size;
-      cout << "," << set_bin_search.count();
-      cout << "," << set_eytzinger.count();
-      cout << "," << bl_set_bin_search.count();
-      cout << "," << bl_set_eytzinger.count();
+      cout << "," << set_bin_search.count() / QUERIES;
+      cout << "," << set_eytzinger.count() / QUERIES;
+      cout << "," << bl_set_bin_search.count() / QUERIES;
+      cout << "," << bl_set_eytzinger.count() / QUERIES;
       cout << endl;
     }
 };
@@ -41,7 +43,7 @@ template <typename T>
 void time_set(
     sets::Base<T> &s,
     std::vector<T> &q,
-    std::chrono::microseconds &res
+    std::chrono::nanoseconds &res
     ){
   std::chrono::steady_clock::time_point begin;
   std::chrono::steady_clock::time_point end; 
@@ -52,12 +54,10 @@ void time_set(
     checksum ^= s.contains(x);
   }
   end = std::chrono::steady_clock::now(); 
-  res = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+  res = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
 };
 
 void benchmark(unsigned size, BenchData &result){
-  int QUERIES = 1e6;
-
   std::vector<int> data;
   data.reserve(size);
   std::set <int> values;
@@ -90,14 +90,14 @@ int main(){
   using namespace std;
 
   vector<unsigned long> benchmark_sizes;
-  for (int i = 1; i <= 24; i++){
+  for (int i = 9; i <= 24; i++){
     benchmark_sizes.push_back(1 << i);
   }
   {
-    unsigned long q = 10000;
-    while (q <= 1000000){
+    unsigned long q = 1000;
+    while (q <= 17000000){
       benchmark_sizes.push_back(q); 
-      q += 10000;
+      q += 1000;
     }
   }
   sort(benchmark_sizes.begin(), benchmark_sizes.end());
