@@ -13,6 +13,9 @@ namespace sets {
       T* data;
       unsigned size;
       Base() : data(nullptr), size(0) {}
+      virtual ~Base(){
+	delete[] data;
+      }
       Base(std::vector<T> vals){
 	size = vals.size();
 	data = new T[size];
@@ -99,6 +102,9 @@ namespace sets {
   template<typename T>
     class BL_ESet: public BaseE<T>{
       public:
+	~BL_ESet() override{
+	  free(this -> data);
+	};
 	BL_ESet(std::vector<T> vals): BaseE<T>{}{
 	  this -> size = vals.size();
 	  unsigned init = 0;

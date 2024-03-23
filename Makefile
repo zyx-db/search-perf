@@ -1,5 +1,5 @@
 CC = g++
-DEBUG_FLAGS = -Wall -Wextra -std=c++20 -fsanitize=address -fsanitize=undefined
+DEBUG_FLAGS = -Wall -Wextra -std=c++20 -fsanitize=address -fsanitize=undefined -fsanitize=leak
 BENCH_FLAGS = -O3 -march=native -std=c++20
 FILES = src/main.cpp src/set.cpp
 
