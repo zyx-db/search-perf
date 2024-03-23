@@ -5,8 +5,7 @@
 #include <chrono>
 #include <iostream>
 
-#include "binsearch.cpp"
-#include "eytzinger.cpp"
+#include "set.cpp"
 
 struct BenchData{
   public:
@@ -21,15 +20,43 @@ struct BenchData{
 
     std::chrono::microseconds packed_bin_search;
     std::chrono::microseconds packed_eytzinger;
-
-    void print() {
-      std::cout << "\t\tbin\teytzinger" << std::endl;
-      std::cout << "b set:\t" << set_bin_search.count() << "\t" << set_eytzinger.count() << std::endl;
-      std::cout << "bl set:\t" << bl_set_bin_search.count() << "\t" << bl_set_eytzinger.count() << std::endl;
-      /* std::cout << "map:\t" << map_bin_search.count() << "\t" << map_eytzinger.count() << std::endl; */
-      /* std::cout << "pmap:\t" << packed_bin_search.count() << "\t" << packed_eytzinger.count() << std::endl; */
-      std::cout << std::endl;
+  
+    void headers() {
+      using namespace std;
+      cout << "size, binary set, eytzinger set, bl binary set, bl eytzinger set" << endl;
     }
+
+    void print(unsigned long size) {
+      using namespace std;
+      cout << size;
+      cout << "," << set_bin_search.count();
+      cout << "," << set_eytzinger.count();
+      cout << "," << bl_set_bin_search.count();
+      cout << "," << bl_set_eytzinger.count();
+      cout << endl;
+    }
+};
+
+template <typename T>
+void time_set(
+    sets::Base<T> &s,
+    std::vector<T> &f_q,
+    std::vector<T> &t_q,
+    std::chrono::microseconds &res
+    ){
+  std::chrono::steady_clock::time_point begin;
+  std::chrono::steady_clock::time_point end; 
+
+  volatile int checksum = 0;
+  begin = std::chrono::steady_clock::now();
+  for (auto x: f_q){
+    checksum ^= s.contains(x);
+  }
+  for (auto x: t_q){
+    checksum ^= s.contains(x);
+  }
+  end = std::chrono::steady_clock::now(); 
+  res = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
 };
 
 void benchmark(unsigned size, BenchData &result){
@@ -59,80 +86,41 @@ void benchmark(unsigned size, BenchData &result){
     int idx = rand() % size;
     true_queries.push_back(data[idx]);
   } 
-  std::chrono::steady_clock::time_point begin;
-  std::chrono::steady_clock::time_point end; 
 
-  {
-    Eytzinger::ESet<int> s(data);
-    begin = std::chrono::steady_clock::now();
-    int checksum = 0;
-    for (auto x: false_queries){
-      checksum ^= s.contains(x); 
-    }
-    for (auto x: true_queries){
-      checksum ^= s.contains(x); 
-    }
-    end = std::chrono::steady_clock::now(); 
-    result.set_eytzinger = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+  sets::ESet<int> eset(data);
+  time_set(eset, false_queries, true_queries, result.set_eytzinger);
 
-    std::cerr << checksum << std::endl;
-  }
-  {
-    Eytzinger::BL_ESet<int> s(data);
-    begin = std::chrono::steady_clock::now();
-    int checksum = 0;
-    for (auto x: false_queries){
-      checksum ^= s.contains(x); 
-    }
-    for (auto x: true_queries){
-      checksum ^= s.contains(x); 
-    }
-    end = std::chrono::steady_clock::now(); 
-    result.bl_set_eytzinger = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+  sets::Set<int> set(data);
+  time_set(set, false_queries, true_queries, result.set_bin_search);
 
-    std::cerr << checksum << std::endl;
-  }
-  {
-    Binsearch::Set<int> s(data);
-    begin = std::chrono::steady_clock::now();
-    int checksum = 0;
-    for (auto x: false_queries){
-      checksum ^= s.contains(x); 
-    }
-    for (auto x: true_queries){
-      checksum ^= s.contains(x); 
-    }
-    end = std::chrono::steady_clock::now(); 
-    result.set_bin_search = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+  sets::BL_ESet<int> bl_eset(data);
+  time_set(bl_eset, false_queries, true_queries, result.bl_set_eytzinger);
 
-    std::cerr << checksum << std::endl;
-  }
-  {
-    Binsearch::BL_Set<int> s(data);
-    begin = std::chrono::steady_clock::now();
-    int checksum = 0;
-    for (auto x: false_queries){
-      checksum ^= s.contains(x); 
-    }
-    for (auto x: true_queries){
-      checksum ^= s.contains(x); 
-    }
-    end = std::chrono::steady_clock::now(); 
-    result.bl_set_bin_search = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-
-    std::cerr << checksum << std::endl;
-  }
+  sets::BL_Set<int> bl_set(data);
+  time_set(bl_set, false_queries, true_queries, result.bl_set_bin_search);
 }
 
 int main(){
   using namespace std;
 
-  vector<unsigned long> benchmark_sizes = {1000, 1<<13, 10000, 1 << 16, 100000, 1 << 18, 1 << 20, 1 << 22};
+  vector<unsigned long> benchmark_sizes;
+  for (int i = 1; i <= 24; i++){
+    benchmark_sizes.push_back(1 << i);
+  }
+  {
+    unsigned long q = 1000;
+    while (q <= 1000000){
+      benchmark_sizes.push_back(q); 
+      q += 1000;
+    }
+  }
+  sort(benchmark_sizes.begin(), benchmark_sizes.end());
   BenchData x; 
 
+  x.headers();
   for (auto size: benchmark_sizes){
-    cout << "size: " << size << endl;
+    cerr << "size: " << size << endl;
     benchmark(size, x);
-    x.print();
+    x.print(size);
   }
 }
