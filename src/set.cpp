@@ -13,7 +13,7 @@ namespace sets {
       T* data;
       unsigned size;
       Base() : data(nullptr), size(0) {}
-      virtual ~Base(){
+      ~Base(){
 	delete[] data;
       }
       Base(std::vector<T> vals){
@@ -102,8 +102,11 @@ namespace sets {
   template<typename T>
     class BL_ESet: public BaseE<T>{
       public:
-	~BL_ESet() override{
+	~BL_ESet() {
 	  free(this -> data);
+	  // after freeing the inherited destructor will still be called
+	  // this can lead to a double free if the data pointer is not reset
+	  this -> data = nullptr;
 	};
 	BL_ESet(std::vector<T> vals): BaseE<T>{}{
 	  this -> size = vals.size();
