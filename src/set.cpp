@@ -1,6 +1,7 @@
 #ifndef BINSEARCH_H
 #define BINSEARCH_H
 
+#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <vector>
@@ -83,7 +84,6 @@ namespace sets {
       bool contains(T key) override{
 	unsigned idx = 1;
 	while (idx < this -> size){
-	  if (this -> data[idx] == key){ return true; }
 	  if (this -> data[idx] > key){
 	    idx = 2 * idx + 1; 
 	  }
@@ -91,7 +91,8 @@ namespace sets {
 	    idx = 2 * idx; 
 	  }
 	}
-	return false;
+	idx >>= __builtin_ffs(~idx);
+	return this -> data[idx] == key;
       }
   };
 
@@ -101,7 +102,10 @@ namespace sets {
 	BL_ESet(std::vector<T> vals): BaseE<T>{}{
 	  this -> size = vals.size();
 	  unsigned init = 0;
-	  this -> data = (T*) aligned_alloc(64, sizeof(T) * (this -> size + 1));
+	  int alloc_size = sizeof(T) * ((this -> size) + 1);
+	  unsigned align_size = 64;
+	  if (alloc_size % align_size != 0){alloc_size += (align_size - (alloc_size % align_size));}
+	  this -> data = (T*) aligned_alloc(align_size, alloc_size);
 	  if (this -> data == nullptr){
 	    this -> data = new T[this -> size + 1];
 	    std::cerr << "failed aligned_alloc" << std::endl;

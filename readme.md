@@ -17,13 +17,8 @@ In addition for the Map, I am comparing performance when the <Key, Value> is sto
 ## Benchmarking strategy
 
 I will benchmark the structures with varying sizes, to account for performance when memory does and doesnt fit in cache lines. The sizes I plan are:
- - 1k
- - 2^13
- - 10k
- - 2^16
- - 100k
- - 2^18
- - 2^20
+ - powers of 2 from 2^1 to 2^24
+ - multiples of 1000, from 1000 to 100,000
 
 (i am including the powers of 2 due to potential issues with cache coherence)
 
@@ -33,12 +28,12 @@ I will benchmark the structures with varying sizes, to account for performance w
 ### Setup
  1. generate n random integers
  2. populate all structures
- 3. generate 10k queries
+ 3. generate 1 million queries
 
 ### Runs
  1. start with a dry run, not measured in benchmarks
  3. start timer
- 2. run the 10k queries
+ 2. run the 1 million queries
  4. end timer
 
 ### Interpretation

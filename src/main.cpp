@@ -40,8 +40,7 @@ struct BenchData{
 template <typename T>
 void time_set(
     sets::Base<T> &s,
-    std::vector<T> &f_q,
-    std::vector<T> &t_q,
+    std::vector<T> &q,
     std::chrono::microseconds &res
     ){
   std::chrono::steady_clock::time_point begin;
@@ -49,10 +48,7 @@ void time_set(
 
   volatile int checksum = 0;
   begin = std::chrono::steady_clock::now();
-  for (auto x: f_q){
-    checksum ^= s.contains(x);
-  }
-  for (auto x: t_q){
+  for (auto x: q){
     checksum ^= s.contains(x);
   }
   end = std::chrono::steady_clock::now(); 
@@ -65,8 +61,7 @@ void benchmark(unsigned size, BenchData &result){
   std::vector<int> data;
   data.reserve(size);
   std::set <int> values;
-  std::vector<int> false_queries;
-  std::vector<int> true_queries;
+  std::vector<int> queries;
   while (values.size() < size){
     values.insert(rand());
   }
@@ -74,30 +69,21 @@ void benchmark(unsigned size, BenchData &result){
     data.push_back(x);
   }
   std::sort(data.begin(), data.end());
-  int i = 0;
-  while (i < QUERIES){
-    int cur = rand();
-    if (!values.contains(cur)){
-      false_queries.push_back(cur);
-      i++;
-    }
-  }
   for (int i = 0; i < QUERIES; i++){
-    int idx = rand() % size;
-    true_queries.push_back(data[idx]);
-  } 
+    queries.push_back(rand());
+  }
 
   sets::ESet<int> eset(data);
-  time_set(eset, false_queries, true_queries, result.set_eytzinger);
+  time_set(eset, queries, result.set_eytzinger);
 
   sets::Set<int> set(data);
-  time_set(set, false_queries, true_queries, result.set_bin_search);
+  time_set(set, queries, result.set_bin_search);
 
   sets::BL_ESet<int> bl_eset(data);
-  time_set(bl_eset, false_queries, true_queries, result.bl_set_eytzinger);
+  time_set(bl_eset, queries, result.bl_set_eytzinger);
 
   sets::BL_Set<int> bl_set(data);
-  time_set(bl_set, false_queries, true_queries, result.bl_set_bin_search);
+  time_set(bl_set, queries, result.bl_set_bin_search);
 }
 
 int main(){
@@ -108,10 +94,10 @@ int main(){
     benchmark_sizes.push_back(1 << i);
   }
   {
-    unsigned long q = 1000;
+    unsigned long q = 10000;
     while (q <= 1000000){
       benchmark_sizes.push_back(q); 
-      q += 1000;
+      q += 10000;
     }
   }
   sort(benchmark_sizes.begin(), benchmark_sizes.end());
